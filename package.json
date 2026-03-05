@@ -1,0 +1,14 @@
+{
+  "name": "com.frostebite.gamedebughub",
+  "version": "1.0.0",
+  "displayName": "Game Debug Hub",
+  "description": "Extensible debug window framework for Unity with attribute-based auto-discovery of debug tabs.",
+  "unity": "2021.3",
+  "author": {
+    "name": "Frostebite",
+    "url": "https://github.com/frostebite"
+  },
+  "license": "MIT",
+  "keywords": ["debug", "editor", "tools", "extensible"],
+  "type": "tool"
+}

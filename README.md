@@ -26,7 +26,7 @@ GameDebugHub provides a single editor window — **Tools > Game Debug Hub** — 
 ```json
 {
   "dependencies": {
-    "com.frostebite.gamedebugehub": "https://github.com/frostebite/GameDebugHub.git"
+    "com.frostebite.gamedebughub": "https://github.com/frostebite/GameDebugHub.git"
   }
 }
 ```
@@ -42,11 +42,16 @@ git submodule add https://github.com/frostebite/GameDebugHub.git Assets/_Engine/
 - Unity 2021.3 or later
 - No external dependencies
 
+## Namespace
+
+All types are in the `GameDebugHub` namespace. Add `using GameDebugHub;` to any file that references `DebugHubTabAttribute`, `IDebugHubTab`, or `DebugHubTabBase`.
+
 ## Quick Start
 
 Create a class in any Editor assembly, apply `[DebugHubTab]`, and extend `DebugHubTabBase`:
 
 ```csharp
+using GameDebugHub;
 using UnityEditor;
 using UnityEngine;
 
@@ -72,6 +77,9 @@ Your assembly definition must reference `GameDebugHub` so the attribute and base
 Alternatively, implement `IDebugHubTab` directly if you do not want the base class utilities:
 
 ```csharp
+using GameDebugHub;
+using UnityEditor;
+
 [DebugHubTab("Minimal Tab")]
 public class MinimalTab : IDebugHubTab
 {
@@ -120,6 +128,10 @@ public override bool ShouldShow()
 For tabs that display live data, return `true` from `RequiresUpdate()` and update state in `OnUpdate()`:
 
 ```csharp
+using GameDebugHub;
+using UnityEditor;
+using UnityEngine;
+
 [DebugHubTab("Live Stats", Order = 5)]
 public class LiveStatsTab : DebugHubTabBase
 {

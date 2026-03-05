@@ -1,6 +1,6 @@
 {
     "name": "GameDebugHub",
-    "rootNamespace": "",
+    "rootNamespace": "GameDebugHub",
     "references": [],
     "includePlatforms": [
         "Editor"
