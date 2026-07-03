@@ -206,6 +206,49 @@ namespace GameDebugHub
             window.minSize = new Vector2(600, 400);
         }
 
+        /// <summary>
+        /// Stable slug for a tab, matching BuddyLaunchManifestWriter.MakeStableId (derived from the
+        /// tab's declaring type full name). Used to resolve an external "open this tab" request
+        /// (e.g. from Battle Buddy Desktop's dashboard HTTP endpoint) into a concrete tab index.
+        /// </summary>
+        private static string MakeStableId(Type type)
+        {
+            var raw = type.FullName ?? type.Name;
+            var sb = new System.Text.StringBuilder(raw.Length);
+            foreach (var c in raw)
+            {
+                sb.Append(char.IsLetterOrDigit(c) ? char.ToLowerInvariant(c) : '-');
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Opens (or focuses) the Game Debug Hub window and selects the tab whose stable id matches.
+        /// Returns true if a matching tab was found and selected, false otherwise. Safe to call from
+        /// any external dispatch point (e.g. EditorDashboardServer's open-debug-tab endpoint) as long
+        /// as the call is marshaled onto the Unity main thread first.
+        /// </summary>
+        public static bool SelectTabById(string tabId)
+        {
+            if (string.IsNullOrEmpty(tabId)) return false;
+
+            _tabsLoaded = false;
+            LoadTabs();
+
+            var visibleTabs = _tabs.Where(t => t.Instance.ShouldShow()).ToList();
+            var index = visibleTabs.FindIndex(t => string.Equals(MakeStableId(t.Instance.GetType()), tabId, StringComparison.Ordinal));
+            if (index < 0) return false;
+
+            var window = GetWindow<GenericGameDebugHub>("Game Debug Hub");
+            window.minSize = new Vector2(600, 400);
+            window._selectedTab = index;
+            window._previousSelectedTab = index;
+            EditorPrefs.SetInt("GenericGameDebugHub_SelectedTab", index);
+            window.Focus();
+            window.Repaint();
+            return true;
+        }
+
         private void OnEnable()
         {
             // Reload tabs in case new ones were added (e.g., after recompilation)
