@@ -14,6 +14,17 @@ namespace GameDebugHub
     /// </summary>
     public class GenericGameDebugHub : EditorWindow
     {
+        /// <summary>
+        /// Fired whenever a dev hub tab is selected -- either interactively via the tab bar
+        /// ("button") or programmatically via <see cref="SelectTabById"/> ("external", e.g. a
+        /// cross-tool dispatch from Buddy Desktop's dashboard open-debug-tab endpoint). Discrete
+        /// selection event only, never raised from OnGUI/OnEditorUpdate's per-frame paths.
+        /// Parameters: tab name, framework label, module label, trigger. GameDebugHub has no
+        /// dependency on SharedEditorCode/analytics, so consumers (e.g. editor usage telemetry)
+        /// subscribe from an assembly that references this one, not the other way around.
+        /// </summary>
+        public static event Action<string, string, string, string> TabSelected;
+
         private static readonly List<TabInfo> _tabs = new List<TabInfo>();
         private static bool _tabsLoaded = false;
 
@@ -239,11 +250,14 @@ namespace GameDebugHub
             var index = visibleTabs.FindIndex(t => string.Equals(MakeStableId(t.Instance.GetType()), tabId, StringComparison.Ordinal));
             if (index < 0) return false;
 
+            var selectedTabInfo = visibleTabs[index];
+
             var window = GetWindow<GenericGameDebugHub>("Game Debug Hub");
             window.minSize = new Vector2(600, 400);
             window._selectedTab = index;
             window._previousSelectedTab = index;
             EditorPrefs.SetInt("GenericGameDebugHub_SelectedTab", index);
+            TabSelected?.Invoke(selectedTabInfo.Name, selectedTabInfo.Framework, selectedTabInfo.Module, "external");
             window.Focus();
             window.Repaint();
             return true;
@@ -366,7 +380,9 @@ namespace GameDebugHub
                 // Notify new tab it's being selected
                 if (_selectedTab >= 0 && _selectedTab < visibleTabs.Count)
                 {
-                    visibleTabs[_selectedTab].Instance.OnTabSelected();
+                    var newTab = visibleTabs[_selectedTab];
+                    newTab.Instance.OnTabSelected();
+                    TabSelected?.Invoke(newTab.Name, newTab.Framework, newTab.Module, "button");
                 }
 
                 _previousSelectedTab = _selectedTab;
